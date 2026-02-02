@@ -1,6 +1,18 @@
 #include <terrain/terrain.hh>
 
+#include <unordered_set>
+
 void terrain_manager::load_chunk(const glm::ivec2& chunk_coord) {
+  if (loaded_chunks.find(chunk_coord) != loaded_chunks.end()) return;
+
+  std::filesystem::path path =
+    "world_data/chunk_" +
+    std::to_string(chunk_coord.x) + "_" +
+    std::to_string(chunk_coord.y) + ".bin";
+
+  if (!std::filesystem::exists(path)) return;
+
+  load_chunk_from_file(path);
 }
 
 bool terrain_manager::load_chunk_from_file(const std::filesystem::path& path) {
@@ -84,37 +96,16 @@ void terrain_manager::unload_chunk(const glm::ivec2& chunk_coord) {
   loaded_chunks.erase(chunk_coord);
 }
 
-chunk create_chunk(glm::ivec2 chunk_coord) {
-  chunk chunk_tmp;
-  chunk_tmp.chunk_coord = chunk_coord;
-
-  for (int z = 0; z < units::chunk_size + 1; z++) {
-    for (int x = 0; x < units::chunk_size + 1; x++) {
-      int world_x = chunk_coord.x + x;
-      int world_z = chunk_coord.y + z;
-      chunk_tmp.heights[z][x] = sin(world_x / 2.0f) * sin(world_z / 2.0f) * 0.3f;
-    }
-  }
-
-  for (int z = 0; z < units::chunk_size; z++) {
-    for (int x = 0; x < units::chunk_size; x++) {
-      chunk_tmp.tiles[z][x].type = stone;
-    }
-  }
-
-  return chunk_tmp;
-}
-
 std::unique_ptr<mesh> create_mesh_from_chunk(chunk& chunk_ptr) {
   std::vector<vertex> vertices;
   std::vector<unsigned int> indices;
 
   for (int z = 0; z < units::chunk_size; z++) {
     for (int x = 0; x < units::chunk_size; x++) {
-      float h00 = (chunk_ptr.heights[z][x] - 0.5f) * units::height_scale;
-      float h01 = (chunk_ptr.heights[z][x + 1] - 0.5f) * units::height_scale;
-      float h10 = (chunk_ptr.heights[z + 1][x] - 0.5f) * units::height_scale;
-      float h11 = (chunk_ptr.heights[z + 1][x + 1] - 0.5f) * units::height_scale;
+      float h00 = (chunk_ptr.heights[z][x] - 128.0f) * units::height_scale;
+      float h01 = (chunk_ptr.heights[z][x + 1] - 128.0f) * units::height_scale;
+      float h10 = (chunk_ptr.heights[z + 1][x] - 128.0f) * units::height_scale;
+      float h11 = (chunk_ptr.heights[z + 1][x + 1] - 128.0f) * units::height_scale;
 
       float tx = x * units::tile_size;
       float tz = z * units::tile_size;
@@ -134,9 +125,8 @@ std::unique_ptr<mesh> create_mesh_from_chunk(chunk& chunk_ptr) {
       }
 
       float avg_height = (h00 + h01 + h10 + h11) / 4.0f;
-      float factor = 0.5f + 0.05f * avg_height;
+      float factor = 1.0f + 0.10f * avg_height;
       glm::vec3 color = base_color * factor;
-      //glm::vec3 color = base_color;
 
       unsigned int start_index = vertices.size();
       vertices.push_back({p00, color});
@@ -154,6 +144,32 @@ std::unique_ptr<mesh> create_mesh_from_chunk(chunk& chunk_ptr) {
   }
 
   return std::make_unique<mesh>(vertices, indices);
+}
+
+void terrain_manager::update(const glm::ivec2& coord) {
+  std::unordered_set<glm::ivec2, ivec2_hash> request;
+
+  for (int z = -units::view_distance; z <= units::view_distance; ++z) {
+    for (int x = -units::view_distance; x <= units::view_distance; ++x) {
+      request.insert(coord + glm::ivec2(x, z));
+    }
+  }
+
+  for (const glm::ivec2& chunk_coord : request) {
+    if (loaded_chunks.find(chunk_coord) == loaded_chunks.end()) {
+      load_chunk(chunk_coord);
+    }
+  }
+
+  for (auto it = loaded_chunks.begin(); it != loaded_chunks.end();) {
+    if (request.find(it->first) == request.end()) {
+      chunk_meshes.erase(it->first);
+      chunk_instances.erase(it->first);
+      it = loaded_chunks.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 float sample_height(float world_x, float world_z, chunk* chunk_ptr) {

@@ -68,6 +68,7 @@ class terrain_manager {
     void load_all_chunks(const std::string& path);
     chunk* get_chunk(const glm::ivec2& chunk_coord);
     void unload_chunk(const glm::ivec2& chunk_coord);
+    void update(const glm::ivec2& coord);
 
     std::unordered_map<glm::ivec2, chunk, ivec2_hash> loaded_chunks;
     std::unordered_map<glm::ivec2, std::unique_ptr<mesh>, ivec2_hash> chunk_meshes;

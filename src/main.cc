@@ -17,6 +17,7 @@
 
 #include <vector>
 #include <string>
+#include <cmath>
 
 int main(void) {
   glfw_window game_window(1024, 768, "game");
@@ -41,7 +42,7 @@ int main(void) {
       glm::vec3(1.0f, 1.0f, 1.0f));
 
   terrain_manager terrain;
-  terrain.load_all_chunks("world_data/");
+  //terrain.load_all_chunks("world_data/");
 
   glm::mat4 view  = glm::mat4(1.0f);
   glm::mat4 projection  = glm::mat4(1.0f);
@@ -80,6 +81,13 @@ int main(void) {
     glUniformMatrix4fv(entity_shader.uniform_projection, 1, GL_FALSE, glm::value_ptr(projection));
     square_object.draw(entity_shader);
 
+    const float chunk_world_size = units::chunk_size * units::tile_size;
+    glm::ivec2 coord(
+      static_cast<int>(std::floor(camera_noclip.position.x / chunk_world_size)),
+      static_cast<int>(std::floor(camera_noclip.position.z / chunk_world_size))
+    );
+
+    terrain.update(coord);
     for (auto& [coord, instance] : terrain.chunk_instances) {
       instance.draw(entity_shader);
     }

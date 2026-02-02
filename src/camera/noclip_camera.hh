@@ -30,7 +30,7 @@ class noclip_camera : public camera {
       : position(0.0f, 0.0f, 3.0f), yaw(-90), pitch(0.0f),
         fov(70), aspect(aspect),
         near_plane(0.1f), far_plane(100.0f),
-        input(input), speed(5.0f), sensitivity(0.1f),
+        input(input), speed(10.0f), sensitivity(0.1f),
         show_cursor(true), window(window) {}
 
     glm::mat4 get_view(void) const override;
