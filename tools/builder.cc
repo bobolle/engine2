@@ -55,7 +55,7 @@ std::vector<float> load_heightmap(const std::string& path, int& width, int& heig
 chunk_disk create_chunk_from_data(glm::ivec2 chunk_coord, const std::vector<glm::vec3>& colors,
     const std::vector<float>& heights, int tw, int th, int hw, int hh) {
   chunk_disk chunk_tmp;
-  chunk_tmp.chunk_coord = chunk_coord;
+  chunk_tmp.coord = chunk_coord;
 
   int cx = chunk_coord.x;
   int cz = chunk_coord.y;

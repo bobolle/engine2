@@ -39,16 +39,16 @@ bool terrain_manager::load_chunk_from_file(const std::filesystem::path& path) {
   in.close();
 
   chunk chunk_tmp;
-  chunk_tmp.chunk_coord = glm::ivec2(cx, cz);
+  chunk_tmp.coord = glm::ivec2(cx, cz);
 
-  for (int z = 0; z <= units::chunk_size; ++z) {
-    for (int x = 0; x <= units::chunk_size; ++x) {
-      chunk_tmp.heights[z][x] = cd.heights[z][x];
+  for (int z = 0; z <= units::tiles_per_chunk; ++z) {
+    for (int x = 0; x <= units::tiles_per_chunk; ++x) {
+      chunk_tmp.heights[z][x] = cd.heights[z][x] - 128.0f;
     }
   }
 
-  for (int z = 0; z < units::chunk_size; ++z) {
-    for (int x = 0; x < units::chunk_size; ++x) {
+  for (int z = 0; z < units::tiles_per_chunk; ++z) {
+    for (int x = 0; x < units::tiles_per_chunk; ++x) {
       const tile_disk& td = cd.tiles[z][x];
       chunk_tmp.tiles[z][x].h00 = td.h00;
       chunk_tmp.tiles[z][x].h01 = td.h01;
@@ -60,19 +60,17 @@ bool terrain_manager::load_chunk_from_file(const std::filesystem::path& path) {
   }
 
   loaded_chunks[glm::ivec2(cx, cz)] = chunk_tmp;
-  chunk_meshes[chunk_tmp.chunk_coord] = create_mesh_from_chunk(chunk_tmp);
+  chunk_meshes[chunk_tmp.coord] = create_mesh_from_chunk(chunk_tmp);
 
   mesh_instance instance(
-      chunk_meshes[chunk_tmp.chunk_coord].get(),
-      glm::vec3(chunk_tmp.chunk_coord.x * units::chunk_size * units::tile_size,
+      chunk_meshes[chunk_tmp.coord].get(),
+      glm::vec3(chunk_tmp.coord.x * units::tiles_per_chunk * units::tile_size,
         0.0f,
-        chunk_tmp.chunk_coord.y * units::chunk_size * units::tile_size),
+        chunk_tmp.coord.y * units::tiles_per_chunk * units::tile_size),
       glm::quat(glm::vec3(0.0f)),
       glm::vec3(1.0f));
 
-  chunk_instances[chunk_tmp.chunk_coord] = instance;
-
-  std::cout << "loaded chunk_" << cx << "_" << cz << " into chunk_instances" << "\n";
+  chunk_instances[chunk_tmp.coord] = instance;
 
   return true;
 }
@@ -100,12 +98,12 @@ std::unique_ptr<mesh> create_mesh_from_chunk(chunk& chunk_ptr) {
   std::vector<vertex> vertices;
   std::vector<unsigned int> indices;
 
-  for (int z = 0; z < units::chunk_size; z++) {
-    for (int x = 0; x < units::chunk_size; x++) {
-      float h00 = (chunk_ptr.heights[z][x] - 128.0f) * units::height_scale;
-      float h01 = (chunk_ptr.heights[z][x + 1] - 128.0f) * units::height_scale;
-      float h10 = (chunk_ptr.heights[z + 1][x] - 128.0f) * units::height_scale;
-      float h11 = (chunk_ptr.heights[z + 1][x + 1] - 128.0f) * units::height_scale;
+  for (int z = 0; z < units::tiles_per_chunk; z++) {
+    for (int x = 0; x < units::tiles_per_chunk; x++) {
+      float h00 = (chunk_ptr.heights[z][x]) * units::height_scale;
+      float h01 = (chunk_ptr.heights[z][x + 1]) * units::height_scale;
+      float h10 = (chunk_ptr.heights[z + 1][x]) * units::height_scale;
+      float h11 = (chunk_ptr.heights[z + 1][x + 1]) * units::height_scale;
 
       float tx = x * units::tile_size;
       float tz = z * units::tile_size;
@@ -149,8 +147,8 @@ std::unique_ptr<mesh> create_mesh_from_chunk(chunk& chunk_ptr) {
 void terrain_manager::update(const glm::ivec2& coord) {
   std::unordered_set<glm::ivec2, ivec2_hash> request;
 
-  for (int z = -units::view_distance; z <= units::view_distance; ++z) {
-    for (int x = -units::view_distance; x <= units::view_distance; ++x) {
+  for (int z = -units::loaded_chunks_max; z <= units::loaded_chunks_max; ++z) {
+    for (int x = -units::loaded_chunks_max; x <= units::loaded_chunks_max; ++x) {
       request.insert(coord + glm::ivec2(x, z));
     }
   }
@@ -173,16 +171,16 @@ void terrain_manager::update(const glm::ivec2& coord) {
 }
 
 float sample_height(float world_x, float world_z, chunk* chunk_ptr) {
-  const float chunk_world_size = units::chunk_size * units::tile_size;
+  const float chunk_world_size = units::tiles_per_chunk * units::tile_size;
 
-  float local_x = world_x - chunk_ptr->chunk_coord.x * chunk_world_size;
-  float local_z = world_z - chunk_ptr->chunk_coord.y * chunk_world_size;
+  float local_x = world_x - chunk_ptr->coord.x * chunk_world_size;
+  float local_z = world_z - chunk_ptr->coord.y * chunk_world_size;
 
   int tile_x = static_cast<int>(local_x / units::tile_size);
   int tile_z = static_cast<int>(local_z / units::tile_size);
 
-  tile_x = glm::clamp(tile_x, 0, units::chunk_size - 1);
-  tile_z = glm::clamp(tile_z, 0, units::chunk_size - 1);
+  tile_x = glm::clamp(tile_x, 0, units::tiles_per_chunk - 1);
+  tile_z = glm::clamp(tile_z, 0, units::tiles_per_chunk - 1);
 
   float fx = (local_x - tile_x * units::tile_size) / units::tile_size;
   float fz = (local_z - tile_z * units::tile_size) / units::tile_size;

@@ -54,6 +54,8 @@ int main(void) {
   float last_frame = 0.0f;
   float accumulator = 0.0f;
 
+  const float chunk_world_size = units::chunk_size * units::tile_size;
+
   while(!glfwWindowShouldClose(window)) {
     current_frame = (float)glfwGetTime();
     dt = current_frame - last_frame;
@@ -81,7 +83,6 @@ int main(void) {
     glUniformMatrix4fv(entity_shader.uniform_projection, 1, GL_FALSE, glm::value_ptr(projection));
     square_object.draw(entity_shader);
 
-    const float chunk_world_size = units::chunk_size * units::tile_size;
     glm::ivec2 coord(
       static_cast<int>(std::floor(camera_noclip.position.x / chunk_world_size)),
       static_cast<int>(std::floor(camera_noclip.position.z / chunk_world_size))
@@ -91,8 +92,8 @@ int main(void) {
     for (auto& [coord, instance] : terrain.chunk_instances) {
       instance.draw(entity_shader);
     }
+    
 
-    //float height = sample_height(camera_noclip.position.x, camera_noclip.position.z, &current_chunk);
     //std::string title = "ground height: " + std::to_string(height);
     //glfwSetWindowTitle(window, title.c_str());
 

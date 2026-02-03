@@ -47,15 +47,15 @@ struct tile_disk {
 };
 
 struct chunk_disk {
-  glm::ivec2 chunk_coord;
-  float heights[units::chunk_size + 1][units::chunk_size + 1];
-  tile_disk tiles[units::chunk_size][units::chunk_size];
+  glm::ivec2 coord;
+  float heights[units::tiles_per_chunk + 1][units::tiles_per_chunk + 1];
+  tile_disk tiles[units::tiles_per_chunk][units::tiles_per_chunk];
 };
 
 struct chunk {
-  glm::ivec2 chunk_coord;
-  float heights[units::chunk_size + 1][units::chunk_size + 1];
-  tile tiles[units::chunk_size][units::chunk_size];
+  glm::ivec2 coord;
+  float heights[units::tiles_per_chunk + 1][units::tiles_per_chunk + 1];
+  tile tiles[units::tiles_per_chunk][units::tiles_per_chunk];
 };
 
 class terrain_manager {

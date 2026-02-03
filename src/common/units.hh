@@ -4,9 +4,13 @@
 namespace units {
   constexpr float metre = 1.0f;
   constexpr float tile_size = 1.0f * metre;
-  constexpr int chunk_size = 16;
+
+  constexpr int   tiles_per_chunk = 16;
+  constexpr int   loaded_chunks_max = 5;
+
+  constexpr float world_size = tiles_per_chunk * tile_size;
+  constexpr float chunk_size = 16.0f * tile_size;
   constexpr float height_scale = 0.1f;
-  constexpr int view_distance = 5;
 }
 
 #endif
