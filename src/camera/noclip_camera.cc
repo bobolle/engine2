@@ -2,17 +2,9 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-static glm::vec3 get_forward(float yaw, float pitch) {
-  glm::vec3 forward;
-  forward.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-  forward.y = sin(glm::radians(pitch));
-  forward.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-  return glm::normalize(forward);
-}
-
 glm::mat4 noclip_camera::get_view(void) const {
-  glm::vec3 forward = get_forward(yaw, pitch);
-  return glm::lookAt(position, position + forward, glm::vec3(0.0f, 1.0f, 0.0f));
+  glm::vec3 forward = get_forward();
+  return glm::lookAt(position, position + forward, { 0.0f, 1.0f, 0.0f });
 }
 
 glm::mat4 noclip_camera::get_projection(void) const {
@@ -20,7 +12,7 @@ glm::mat4 noclip_camera::get_projection(void) const {
 }
 
 void noclip_camera::update(float dt) {
-  glm::vec3 forward = get_forward(yaw, pitch);
+  glm::vec3 forward = get_forward();
   glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
 
   float velocity = speed * dt;
@@ -55,10 +47,6 @@ void noclip_camera::update(float dt) {
     last_x = input->xpos;
     last_y = input->ypos;
   }
-}
-
-void noclip_camera::set_aspect(float aspect) {
-  this->aspect = aspect;
 }
 
 ray noclip_camera::create_mouse_ray(void) {

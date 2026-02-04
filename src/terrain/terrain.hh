@@ -77,6 +77,6 @@ class terrain_manager {
 
 chunk create_chunk(glm::ivec2 chunk_coord);
 std::unique_ptr<mesh> create_mesh_from_chunk(chunk& chunk_ptr);
-float sample_height(float world_x, float world_z, chunk* chunk_ptr);
+float get_terrain_height(float world_x, float world_z, chunk* chunk_ptr);
 
 #endif

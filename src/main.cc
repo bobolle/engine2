@@ -1,6 +1,7 @@
 #include <common/window.hh>
 #include <shader/shader.hh>
 #include <camera/noclip_camera.hh>
+#include <camera/fps_camera.hh>
 #include <input.hh>
 
 #include <mesh/mesh.hh>
@@ -29,11 +30,13 @@ int main(void) {
   shader entity_shader;
   entity_shader.init("shaders/entity.vs", "shaders/entity.fs");
 
+  fps_camera camera_fps(&game_window, &input.state, game_window.aspect());
   noclip_camera camera_noclip(&game_window, &input.state, game_window.aspect());
 
-  game_window.set_resize_callback(
-    [&](float aspect) { camera_noclip.set_aspect(aspect); }
-  );
+  game_window.set_resize_callback([&](float aspect) {
+    camera_noclip.set_aspect(aspect); 
+    camera_fps.set_aspect(aspect); 
+  });
 
   mesh square_mesh = load_mesh_from_file("assets/square.obj");
 
@@ -56,6 +59,8 @@ int main(void) {
 
   const float chunk_world_size = units::chunk_size * units::tile_size;
 
+  camera* current_camera = &camera_fps;
+
   while(!glfwWindowShouldClose(window)) {
     current_frame = (float)glfwGetTime();
     dt = current_frame - last_frame;
@@ -71,9 +76,9 @@ int main(void) {
 
     float alpha = accumulator / tick_dt;
 
-    camera_noclip.update(dt);
-    view       = camera_noclip.get_view();
-    projection = camera_noclip.get_projection();
+    current_camera->update(dt);
+    view       = current_camera->get_view();
+    projection = current_camera->get_projection();
 
     game_window.clear();
     entity_shader.use();
@@ -81,21 +86,24 @@ int main(void) {
     // entities
     glUniformMatrix4fv(entity_shader.uniform_view, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(entity_shader.uniform_projection, 1, GL_FALSE, glm::value_ptr(projection));
-    square_object.draw(entity_shader);
 
-    glm::ivec2 coord(
-      static_cast<int>(std::floor(camera_noclip.position.x / chunk_world_size)),
-      static_cast<int>(std::floor(camera_noclip.position.z / chunk_world_size))
+    glm::ivec2 current_chunk_coord(
+      static_cast<int>(std::floor(current_camera->position.x / chunk_world_size)),
+      static_cast<int>(std::floor(current_camera->position.z / chunk_world_size))
     );
 
-    terrain.update(coord);
+    terrain.update(current_chunk_coord);
     for (auto& [coord, instance] : terrain.chunk_instances) {
       instance.draw(entity_shader);
     }
     
-
-    //std::string title = "ground height: " + std::to_string(height);
-    //glfwSetWindowTitle(window, title.c_str());
+    chunk* current_chunk = terrain.get_chunk(current_chunk_coord);
+    float height = get_terrain_height(current_camera->position.x, current_camera->position.z, current_chunk);
+    camera_fps.set_height(height + (2.5f * units::metre));
+    std::string title = "x: " + std::to_string(std::floor(current_camera->position.x)) +
+                       " z: " + std::to_string(std::floor(current_camera->position.z)) +
+                       " terrain height: " + std::to_string(height);
+    glfwSetWindowTitle(window, title.c_str());
 
     glfwPollEvents();
     glfwSwapBuffers(window);

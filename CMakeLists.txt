@@ -20,6 +20,7 @@ set(GAME_FILES
   ${CMAKE_SOURCE_DIR}/src/common/window.cc
   ${CMAKE_SOURCE_DIR}/src/shader/shader.cc
   ${CMAKE_SOURCE_DIR}/src/camera/noclip_camera.cc
+  ${CMAKE_SOURCE_DIR}/src/camera/fps_camera.cc
   ${CMAKE_SOURCE_DIR}/src/mesh/mesh_instance.cc
   ${CMAKE_SOURCE_DIR}/src/terrain/terrain.cc
 )

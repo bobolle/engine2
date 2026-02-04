@@ -170,7 +170,9 @@ void terrain_manager::update(const glm::ivec2& coord) {
   }
 }
 
-float sample_height(float world_x, float world_z, chunk* chunk_ptr) {
+float get_terrain_height(float world_x, float world_z, chunk* chunk_ptr) {
+  if (!chunk_ptr) return -99.0f;
+
   const float chunk_world_size = units::tiles_per_chunk * units::tile_size;
 
   float local_x = world_x - chunk_ptr->coord.x * chunk_world_size;
@@ -204,5 +206,22 @@ float sample_height(float world_x, float world_z, chunk* chunk_ptr) {
     height = h11 * (1.0f - ux - uz) + h01 * uz + h10 * ux;
   }
 
-  return height;
+  return height * units::height_scale;
+}
+
+glm::vec3 terrain_normal(float world_x, float world_z, chunk* chunk_ptr) {
+  const float e = 0.1f;
+
+  float hl = get_terrain_height(world_x - e, world_z, chunk_ptr);
+  float hr = get_terrain_height(world_x + e, world_z, chunk_ptr);
+  float hd = get_terrain_height(world_x, world_z - e, chunk_ptr);
+  float hu = get_terrain_height(world_x, world_z + e, chunk_ptr);
+
+  glm::vec3 n = glm::normalize(glm::vec3(
+    hl - hr,
+    2.0f * e,
+    hd - hu
+  ));
+
+  return n;
 }
