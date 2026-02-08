@@ -11,11 +11,11 @@ class camera {
     camera(const glm::vec3& position, float yaw, float pitch, 
         float fov, float near_plane, float far_plane, float aspect) :
       position(position),
-      yaw(-90.0f),
-      pitch(0.0f),
-      fov(70.0f),
-      near_plane(0.1f), 
-      far_plane(100.0f),
+      yaw(yaw),
+      pitch(pitch),
+      fov(fov),
+      near_plane(near_plane), 
+      far_plane(far_plane),
       aspect(aspect) {}
     virtual ~camera() {}
 

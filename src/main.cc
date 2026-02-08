@@ -3,11 +3,9 @@
 #include <camera/noclip_camera.hh>
 #include <camera/fps_camera.hh>
 #include <input.hh>
-
 #include <mesh/mesh.hh>
 #include <mesh/mesh_loader.hh>
-#include <mesh/mesh_instance.hh>
-
+#include <entities/entity.hh>
 #include <ray.hh>
 #include <terrain/terrain.hh>
 
@@ -40,7 +38,7 @@ int main(void) {
 
   mesh square_mesh = load_mesh_from_file("assets/square.obj");
 
-  mesh_instance square_object(&square_mesh, glm::vec3(0.0f, 0.0f, 0.0f),
+  entity square_object(&square_mesh, glm::vec3(0.0f, 0.0f, 0.0f),
       glm::quat(glm::vec3(0.0f)),
       glm::vec3(1.0f, 1.0f, 1.0f));
 
@@ -56,8 +54,6 @@ int main(void) {
   float dt;
   float last_frame = 0.0f;
   float accumulator = 0.0f;
-
-  const float chunk_world_size = units::chunk_size * units::tile_size;
 
   camera* current_camera = &camera_fps;
 
@@ -88,8 +84,8 @@ int main(void) {
     glUniformMatrix4fv(entity_shader.uniform_projection, 1, GL_FALSE, glm::value_ptr(projection));
 
     glm::ivec2 current_chunk_coord(
-      static_cast<int>(std::floor(current_camera->position.x / chunk_world_size)),
-      static_cast<int>(std::floor(current_camera->position.z / chunk_world_size))
+      static_cast<int>(std::floor(current_camera->position.x / units::chunk_size)),
+      static_cast<int>(std::floor(current_camera->position.z / units::chunk_size))
     );
 
     terrain.update(current_chunk_coord);

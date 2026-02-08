@@ -2,3 +2,4 @@ build/
 *.tmp
 game
 builder
+world_data/*

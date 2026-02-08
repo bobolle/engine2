@@ -43,7 +43,7 @@ bool terrain_manager::load_chunk_from_file(const std::filesystem::path& path) {
 
   for (int z = 0; z <= units::tiles_per_chunk; ++z) {
     for (int x = 0; x <= units::tiles_per_chunk; ++x) {
-      chunk_tmp.heights[z][x] = cd.heights[z][x] - 128.0f;
+      chunk_tmp.heights[z][x] = cd.heights[z][x];
     }
   }
 
@@ -62,7 +62,7 @@ bool terrain_manager::load_chunk_from_file(const std::filesystem::path& path) {
   loaded_chunks[glm::ivec2(cx, cz)] = chunk_tmp;
   chunk_meshes[chunk_tmp.coord] = create_mesh_from_chunk(chunk_tmp);
 
-  mesh_instance instance(
+  entity instance(
       chunk_meshes[chunk_tmp.coord].get(),
       glm::vec3(chunk_tmp.coord.x * units::tiles_per_chunk * units::tile_size,
         0.0f,
@@ -123,7 +123,9 @@ std::unique_ptr<mesh> create_mesh_from_chunk(chunk& chunk_ptr) {
       }
 
       float avg_height = (h00 + h01 + h10 + h11) / 4.0f;
-      float factor = 1.0f + 0.10f * avg_height;
+      float factor = 1.0f + (avg_height / units::height_scale);
+      factor = glm::clamp(factor, 0.10f, 2.0f);
+
       glm::vec3 color = base_color * factor;
 
       unsigned int start_index = vertices.size();
@@ -178,8 +180,8 @@ float get_terrain_height(float world_x, float world_z, chunk* chunk_ptr) {
   float local_x = world_x - chunk_ptr->coord.x * chunk_world_size;
   float local_z = world_z - chunk_ptr->coord.y * chunk_world_size;
 
-  int tile_x = static_cast<int>(local_x / units::tile_size);
-  int tile_z = static_cast<int>(local_z / units::tile_size);
+  int tile_x = static_cast<int>(std::floor(local_x / units::tile_size));
+  int tile_z = static_cast<int>(std::floor(local_z / units::tile_size));
 
   tile_x = glm::clamp(tile_x, 0, units::tiles_per_chunk - 1);
   tile_z = glm::clamp(tile_z, 0, units::tiles_per_chunk - 1);

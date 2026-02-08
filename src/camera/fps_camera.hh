@@ -2,6 +2,7 @@
 #define _fps_camera_hh
 
 #include <camera/camera.hh>
+#include <common/units.hh>
 #include <common/window.hh>
 #include <input.hh>
 
@@ -16,9 +17,9 @@ class fps_camera : public camera {
     bool show_cursor;
 
     fps_camera(glfw_window* window, const input_state* input, float aspect)
-      : camera({0.0f, 0.0f, 3.0f}, -90.0f, 0.0f,
-        70.0f, 0.1f, 100.0f, aspect),
-        input(input), speed(5.0f), sensitivity(0.1f),
+      : camera({0.0f, 0.0f, 0.0f}, 45.0f, 0.0f,
+        70.0f, 0.1f, 400.0f, aspect),
+        input(input), speed(10.0f), sensitivity(0.1f),
         show_cursor(true), window(window) {}
 
     glm::mat4 get_view(void) const override;

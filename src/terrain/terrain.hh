@@ -3,7 +3,7 @@
 
 #include <common/units.hh>
 #include <mesh/mesh.hh>
-#include <mesh/mesh_instance.hh>
+#include <entities/entity.hh>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -72,7 +72,7 @@ class terrain_manager {
 
     std::unordered_map<glm::ivec2, chunk, ivec2_hash> loaded_chunks;
     std::unordered_map<glm::ivec2, std::unique_ptr<mesh>, ivec2_hash> chunk_meshes;
-    std::unordered_map<glm::ivec2, mesh_instance, ivec2_hash> chunk_instances;
+    std::unordered_map<glm::ivec2, entity, ivec2_hash> chunk_instances;
 };
 
 chunk create_chunk(glm::ivec2 chunk_coord);

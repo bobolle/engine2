@@ -41,11 +41,7 @@ std::vector<float> load_heightmap(const std::string& path, int& width, int& heig
 
   std::vector<float> heights(width * height);
   for (int i = 0; i < width * height; ++i) {
-    heights[i] = (float)data[i];
-  }
-
-  for (int i = 0; i < width * height; i = i + 16) {
-    std::cout << heights[i] << "\n";
+    heights[i] = ((float)data[i] / 127.5f) - 1.0f;
   }
 
   stbi_image_free(data);
