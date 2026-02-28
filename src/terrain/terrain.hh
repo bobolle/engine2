@@ -66,7 +66,7 @@ class terrain_manager {
     void load_chunk(const glm::ivec2& chunk_coord);
     bool load_chunk_from_file(const std::filesystem::path& path);
     void load_all_chunks(const std::string& path);
-    chunk* get_chunk(const glm::ivec2& chunk_coord);
+    chunk* get_chunk(const glm::ivec2& coord);
     void unload_chunk(const glm::ivec2& chunk_coord);
     void update(const glm::ivec2& coord);
 

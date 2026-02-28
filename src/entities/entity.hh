@@ -12,13 +12,14 @@ class entity {
     entity() = default;
     entity(mesh* mesh_ptr, glm::vec3 position, glm::quat rotation, glm::vec3 scale) :
       mesh_ptr(mesh_ptr), position(position), rotation(rotation), scale(scale) {}
+    virtual ~entity() = default;
     mesh* mesh_ptr;
     glm::vec3 position;
     glm::quat rotation;
     glm::vec3 scale;
 
-    glm::mat4 get_model_matrix(void);
-    void draw(shader& s);
+    virtual glm::mat4 get_model_matrix(const float) const;
+    void draw(shader& s, const float alpha);
 };
 
 #endif

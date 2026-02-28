@@ -82,8 +82,11 @@ void terrain_manager::load_all_chunks(const std::string& path) {
   }
 }
 
-chunk* terrain_manager::get_chunk(const glm::ivec2& chunk_coord) {
-  auto it = loaded_chunks.find(chunk_coord);
+chunk* terrain_manager::get_chunk(const glm::ivec2& coord) {
+  int x = static_cast<int>(std::floor(coord.x / units::chunk_size));
+  int z = static_cast<int>(std::floor(coord.y / units::chunk_size));
+
+  auto it = loaded_chunks.find({ x, z });
   if (it != loaded_chunks.end()) {
     return &it->second;
   }
@@ -146,8 +149,13 @@ std::unique_ptr<mesh> create_mesh_from_chunk(chunk& chunk_ptr) {
   return std::make_unique<mesh>(vertices, indices);
 }
 
-void terrain_manager::update(const glm::ivec2& coord) {
+void terrain_manager::update(const glm::ivec2& update_coord) {
   std::unordered_set<glm::ivec2, ivec2_hash> request;
+  
+  glm::ivec2 coord(
+    static_cast<int>(std::floor(update_coord.x / units::chunk_size)),
+    static_cast<int>(std::floor(update_coord.y / units::chunk_size))
+  );
 
   for (int z = -units::loaded_chunks_max; z <= units::loaded_chunks_max; ++z) {
     for (int x = -units::loaded_chunks_max; x <= units::loaded_chunks_max; ++x) {
